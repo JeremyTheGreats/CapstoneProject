@@ -7,18 +7,23 @@
     <link rel="stylesheet" href="styles.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" integrity="sha512-QeR2VH+lsBE5LSAe1Q5EnTBbe7XTBubt8dG93Y7gidSgdMCr8nVqKcfKAMyN96SV8KDbZVTDXChatu5G2KQGzg==" crossorigin="anonymous" referrerpolicy="no-referrer">
 </head>
 
 <body>
-    <i class="bi bi-trash3"></i>
+
     <header>
-        <h2>Barangay<span class="highlight">EcoCare</span></h2>
-        <nav>
-            <a href="#">Features</a>
-            <a href="#">How it works</a>
-            <a href="#">Who its for</a>
-            <a class="btn btn-outline-light" href="#">Login</a>
-        </nav>
+        <div class="logo">
+            <img src="images/spark.png" alt="logo">
+            <h2>Barangay<span class="highlight">EcoCare</span></h2>
+        </div>
+            <nav>
+                <a href="#">Features</a>
+                <a href="#">How it works</a>
+                <a href="#">Who its for</a>
+                <a class="btn btn-outline-light" href="#">Login</a>
+            </nav>
+
     </header>
 
     <main>
@@ -75,29 +80,141 @@
                 <div class="box1">
                     <i class="fa-solid fa-triangle-exclamation"></i>
                     <h6>Report</h6>
-                    <p>Report overflowing bins, illegal dumping, and other waste management issues.</p>
+                    <p>Report illegal dumping, uncolleced garbage, or Overflowing bins with photos and location.</p>
                 </div>
 
                 <div class="box2">
                     <i class="fa-solid fa-recycle"></i>
-                    <h6>Segregate properly</h6>
-                    <p>Sort your waste the right way, every day.</p>
+                    <h6>Collection schedules</h6>
+                    <p>Check waste collection schedules for your zone or purok, logged by barangay staff.</p>
                 </div>
 
                 <div class="box3">
                     <i class="fa-solid fa-award"></i>
-                    <h6>Earn rewards</h6>
-                    <p>Get recognized and rewarded for your contributions to keeping the barangay clean.</p>
+                    <h6>Earn and Redeem rewards</h6>
+                    <p>Earn points for verified segregation and redeem the for barangay incentives.</p>
                 </div>
 
                 <div class="box4">
                     <i class="fa-solid fa-chart-line"></i>
                     <h6>Monitor progress</h6>
-                    <p>Track report and segregation across the barangay.</p>
+                    <p>Track report and purok segregation compliance with basic analytics.</p>
                 </div>
 
             </div>
 
+        </section>
+
+        <section class="schedule">
+            <h1>Waste collection schedule</h1>
+            <p>Know when colection comes to your zone. Barangay staff lag each completed route.</p>
+
+            <div class="box-container">
+                <div class="box1">
+                    <h6>Zone 1</h6>
+                    <h4>Purok to 3</h4>
+                    <p>Mon and Thu 6:00 AM</p>
+                </div>
+                <div class="box2">
+                    <h6>Zone 2</h6>
+                    <h4>Purok 4 to 6</h4>
+                    <p>Tue and Fri 6:00 AM</p>
+                </div>
+                <div class="box3">
+                    <h6>Zone 3</h6>
+                    <h4>Purok 7 to 9</h4>
+                    <p>Wed and Sat 6:00AM</p>
+                </div>
+
+            </div>
+
+            <p>Sample schedule. Actual days and times are set by the Barangay</p>
+
+        </section>
+
+        <section class="redeem">
+            <h1>Redeem your Points</h1>
+            <p>Points are awarded after proper segregation recycling is verified. Redeem them for
+                incentives proveded by the barangay
+            </p>
+            <div class="box-container">
+                <div class="box1">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                    <h6>Grocery pack</h6>
+                    <h5>500 points</h5>
+                </div>
+
+                <div class="box2">
+                    <i class="fa-solid fa-basket-shopping"></i>
+                    <h6>Reusable eco bag</h6>
+                    <h5>200 points</h5>
+                </div>
+
+                <div class="box3">
+                    <i class="fa-solid fa-seedling"></i>
+                    <h6>Seedling kit</h6>
+                    <h5>150 points</h5>
+                </div>
+            </div>
+                
+            <p>Sample incentives. Rewards are point based only, with no cash or e-wallet tranfers</p>
+
+        </section>
+
+        <section class="top">
+            <h1>Top 3 outstanding puroks</h1>
+            <p>October 2026 ranked by cleanliness and segragation compliance rate within the barangay.</p>
+            
+            <div class="box-container">
+                <div class="box1">
+                    <h1 style="background-color: silver;">2</h1>
+                    <h3>Purok 2</h3>
+                    <h2>89%</h2>
+                    <p>segragation compliance</p>
+
+                    <div class="progressbar">
+                        <div class="progressfill" style="width: 89%;"></div>
+                    </div>
+                    <div class="label">
+                        <p>Cleanliness 88%</p>
+                        <p>41 resolved</p>
+                    </div>
+                    
+                </div>
+                <div class="box2" style="height: 320px; border: 1px solid orange;">
+                    <h1 style="background-color: gold;">1</h1>
+                    <h3>Purok 5</h3>
+                    <h2>94%</h2>
+                    <p>segragation compliance</p>
+
+                    <div class="progressbar">
+                        <div class="progressfill" style="width: 94%;"></div>
+                    </div>
+                    <div class="label">
+                        <p>Cleanliness 92%</p>
+                        <p>52 resolved</p>
+                    </div>
+                    
+                </div>
+                <div class="box3">
+                    <h1 style="background-color: brown;">3</h1>
+                    <h3>Purok 7</h3>
+                    <h2>85%</h2>
+                    <p>segragation compliance</p>
+
+                    <div class="progressbar">
+                        <div class="progressfill" style="width: 85%;"></div>
+                    </div>
+                    <div class="label">
+                        <p>Cleanliness 86%</p>
+                        <p>37 resolved</p>
+                    </div>
+                    
+                </div>
+
+            </div>
+
+            <p>Sample data. Ranking will update from real purok activity</p>
         </section>
 
         <section class="hero3">
@@ -129,19 +246,19 @@
             <p>Choose your role when you log in.</p>
             <div class="roles-container">
                 <div class="role1">
-                    <h6>User</h6>
+                    <i class="fa-solid fa-user"></i>
                     <h4>Resident</h4>
                     <p>Report issues, track progress, and earn rewards for proper segregation.</p>
                 </div>
 
                 <div class="role2">
-                    <h6>Admin</h6>
+                    <i class="fa-solid fa-circle-check"></i>
                     <h4>Barangay Official</h4>
                     <p>Review reports, assign tasks, and monitor progress across the barangay.</p>
                 </div>
 
                 <div class="role3">
-                    <h6>System</h6>
+                    <i class="fa-solid fa-house"></i>
                     <h4>Community Leader</h4>
                     <p>Oversee multiple barangays, track overall progress, and recognize top contributors.</p>
                 </div>
@@ -152,7 +269,7 @@
                 <div class="loginbox">
                     <h1>A cleaner barangay starts with you.</h1>
                     <p>Small actions make a big impact. Login to get started.</p>
-                    <a class="btn btn-success" href="#">Login</a>
+                    <a href="#">Login</a>
                 </div>
             </div>
             
@@ -163,6 +280,7 @@
 
     <footer>
         <div>
+            <img src="images/spark.png" alt="logo">
             <h2>Barangay<span class="highlight">EcoCare</span></h2>
             <nav>
                 <a href="#">Features</a>
