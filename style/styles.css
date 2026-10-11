@@ -1,5 +1,6 @@
 *{
     scroll-behavior: smooth;
+    box-sizing: border-box;
 }
 
 :root{
@@ -30,7 +31,19 @@ header{
     nav{
         display: flex;
         align-items: center;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 25px;
     }
+
+    nav a{
+        color: white;
+        text-decoration: none;
+        font-size: 17px;
+        font-family: Arial, sans-serif;
+    
+    }
+
 
     h2{
         color: #3688da;
@@ -39,16 +52,60 @@ header{
             color: #f0931d;
         }
     }
+
+    
+
+@media (max-width: 900px) {
+    header {
+        padding: 10px 4%;
+        gap: 15px;
+    }
+
+    header .logo h2 {
+        font-size: 22px;
+    }
+
+    header .logo img {
+        width: 38px;
+        height: 38px;
+    }
+
+    header nav {
+        gap: 12px;
+    }
+
+    header nav a {
+        font-size: 14px;
+    }
 }
 
-nav a{
-    color: white;
-    text-decoration: none;
-    margin-left: 50px;
-    font-size: 20px;
-    font-family: Arial, sans-serif;
-   
+
+@media (max-width: 600px) {
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px 16px;
+    }
+
+    header .logo h2 {
+        font-size: 21px;
+    }
+
+    header nav {
+        width: 100%;
+        justify-content: flex-start;
+        gap: 10px 16px;
+    }
+
+    header nav a {
+        font-size: 13px;
+    }
 }
+
+
+}
+
 
 section{
     padding: 50px 10%;
@@ -60,108 +117,204 @@ main{
     font-family: Arial, sans-serif;
 }
 
-.hero1{
+
+/* HERO SECTION */
+.hero1 {
     background: var(--bg-card);
-    background-position: fixed;
     color: white;
+
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    align-items: center;
+    gap: 40px;
+
+    height: auto;
+    min-height: 60vh;
+    text-align: left;
+}
+
+.hero1 .hero-left {
+    width: 100%;
+    min-width: 0;
+    height: auto;
+}
+
+.hero1 .hero-left h1 {
+    font-size: clamp(32px, 4vw, 60px);
+    line-height: 1.15;
+    font-weight: bold;
+    margin: 0 0 20px;
+}
+
+.hero1 .hero-left p {
+    line-height: 1.7;
+}
+
+.hero1 .cta-container {
     display: flex;
-    gap: 10%;
-    
-    .hero-left{
-        text-align: left;
-        width: 50%;
-        height: 400px;
-        gap: 20px; 
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 30px;
+    margin-left: 0;
+}
 
-        h1{
-            font-weight: bold;
-        }
+.hero1 .cta-container .btn {
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 18px;
+    background-color: #ffb729;
+    color: var(--bg-card);
+    font-weight: bold;
+}
 
-        .cta-container{
-            display: flex;
-            gap: 40px;
-            margin-top: 50px;
-            margin-left: 50px;
+.hero1 .hero-right {
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    margin-top: 0;
 
-            .btn{
-                padding: 10px 20px;
-                border-radius: 5px;
-                font-size: 25px;
-                background-color: #ffb729;
-                color: var(--bg-card);
-                font-weight: bold;
-            }
-        }
+    background-color: var(--boxcolor);
+    border-radius: 20px;
+    padding: clamp(18px, 3vw, 40px);
 
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+}
+
+.hero1 .hero-right .label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.hero1 .hero-right .label h4,
+.hero1 .hero-right .label h6 {
+    margin: 0;
+}
+
+.hero1 .hero-right .box-container {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.hero1 .hero-right .box-left,
+.hero1 .hero-right .box-right {
+    width: 100%;
+    min-width: 0;
+    height: auto;
+
+    background-color: var(--bg-card);
+    border-radius: 10px;
+    padding: 18px;
+    text-align: left;
+}
+
+.hero1 .hero-right .box-left h3,
+.hero1 .hero-right .box-right h3 {
+    color: var(--textblue);
+    margin-bottom: 5px;
+}
+
+.hero1 .hero-right .box-left p,
+.hero1 .hero-right .box-right p {
+    margin-bottom: 0;
+}
+
+.hero1 .hero-right .status-container > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.25);
+    padding-top: 15px;
+    margin-top: 15px;
+}
+
+.hero1 .hero-right .status-container h5 {
+    font-size: 15px;
+    margin: 0;
+}
+
+.hero1 .hero-right .status-container p {
+    background-color: var(--bg-card);
+    color: white;
+    border-radius: 40px;
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: bold;
+    margin: 0;
+}
+
+@media (max-width: 850px) {
+    .hero1 {
+        grid-template-columns: 1fr;
+        gap: 30px;
+        min-height: auto;
     }
-    .hero-left h1{
-        font-size: 60px;
-        margin-top: 50px;
+
+    .hero1 .hero-left h1 {
+        font-size: clamp(32px, 6vw, 48px);
     }
 
-    .hero-right{
-        margin-top: 50px;
-        background-color: var(--boxcolor);
-        width: 40%;
-        height: 80%;
-        border-radius: 20px;
-        align-items: center;
-        padding: 0 60px;
-        box-shadow: 50px 50px 50px rgba(0, 0, 0, 0.326);
-
-        .label{
-            display: flex;
-            justify-content: space-between;
-            margin-top: 10%;
-            
-        }
-        .box-container{
-            display: flex;
-            justify-content: space-between;
-            gap: 20px;
-        
-            .box-left, .box-right{
-            height: 100px;
-            width: 400px;
-            background-color: var(--bg-card);
-            border-radius: 10px;
-            padding: 20px 20px;
-            text-align: start;
-            margin-bottom: 20px;
-
-            h3{
-                color: #3688da;
-            }
-            }
-        }
-        .status-container div{
-            display:flex;
-            justify-content: space-between;
-          
-            border-top: 1px solid white;
-            align-items: center;
-           
-            p{
-                align-items: center;       
-                text-align: center;
-                background-color: var(--bg-card);
-                color: white;
-                border-radius: 40px;
-                padding: 10px 10px;
-                font-weight: bold;
-                margin-top: 10px;
-            }
-        }
-        
-        
-
+    .hero1 .hero-right {
+        max-width: 600px;
     }
 }
+
+@media (max-width: 600px) {
+    .hero1 {
+        padding: 35px 18px;
+        gap: 25px;
+    }
+
+    .hero1 .hero-left h1 {
+        font-size: clamp(30px, 8vw, 40px);
+    }
+
+    .hero1 .cta-container {
+        gap: 12px;
+    }
+
+    .hero1 .cta-container .btn {
+        font-size: 15px;
+        padding: 10px 14px;
+    }
+
+    .hero1 .hero-right {
+        padding: 18px;
+        border-radius: 15px;
+    }
+
+    .hero1 .hero-right .box-container {
+        gap: 10px;
+    }
+
+    .hero1 .hero-right .box-left,
+    .hero1 .hero-right .box-right {
+        padding: 12px;
+    }
+
+    .hero1 .hero-right .status-container > div {
+        align-items: flex-start;
+    }
+
+    .hero1 .hero-right .status-container h5 {
+        font-size: 13px;
+    }
+}
+
 
 .hero2{
     background-color: var(--bg--main);
     text-align: start;
     color: white;
+    overflow: hidden;
 
     h1{
         font-size: 50px;
@@ -185,6 +338,10 @@ main{
             h6{
                 font-size: 20px;
                 font-weight: bold;
+
+                p{
+                    margin-top: auto;
+                }
             }
 
             i{
@@ -209,6 +366,7 @@ main{
     background-color: var(--bg-card);
     color: white;
     text-align: start;
+    overflow: hidden;
 
     h1{
         font-weight: bold;
@@ -467,10 +625,17 @@ footer{
 
     div{
         display: flex;
-        justify-content: space-between;
 
         nav{
+            display: flex;
+            gap: 40px;
+            justify-content: end;
             margin-left: auto;
+        }
+
+        a{
+            text-decoration: none;
+            
         }
 
         h2{
