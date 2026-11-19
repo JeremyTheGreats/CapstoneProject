@@ -1,0 +1,8 @@
+# Secret keys & local config
+config/secrets.php
+config/secrets.ini
+.env
+
+# Editor / OS junk
+.DS_Store
+Thumbs.db

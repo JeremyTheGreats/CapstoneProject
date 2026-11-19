@@ -1,0 +1,57 @@
+/* Collector-only controls, layered on the shared dashboard system. */
+.sidebar .logo img {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    margin-right: 8px;
+    object-fit: contain;
+    vertical-align: middle;
+}
+
+.notice {
+    margin-top: 16px;
+    padding: 14px 16px;
+    border: 1px solid #38535a;
+    border-radius: var(--radius-sm);
+    background: #172a32;
+    color: var(--muted);
+}
+
+.route-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    cursor: pointer;
+}
+
+.route-item input {
+    width: 18px;
+    height: 18px;
+    flex: none;
+    accent-color: var(--orange);
+}
+
+.route-item > div {
+    min-width: 0;
+}
+
+.route-item strong {
+    display: block;
+}
+
+.route-item small {
+    display: block;
+    color: var(--muted);
+}
+
+.badge.b-role {
+    background: #29464c;
+    color: #d0edf0;
+}
+
+@media (max-width: 600px) {
+    .route-item {
+        flex: 1 1 100%;
+    }
+}

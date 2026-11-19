@@ -1,0 +1,352 @@
+/* 5. LANDING PAGE ------------------------------------------ */
+.site-header {
+  display: flex;
+  justify-content: center;
+  border-radius: 20px;
+  width: 80%;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  border-bottom: 1px solid var(--line);
+}
+
+.site-header .wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 66px;
+  min-width: 70%;
+}
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+}
+
+.site-nav a:not(.btn) {
+  color: var(--muted);
+  font-weight: 500;
+  transition: color var(--ease);
+}
+
+.site-nav a:not(.btn):hover {
+  color: var(--orange);
+}
+
+.nav-toggle,
+.nav-burger {
+  display: none;
+}
+
+.hero {
+  padding: clamp(84px, 12vw, 148px) 0;
+  background: var(--bg-alt);
+  min-height: 100dvh;
+  display: grid;
+  align-items: center;
+  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://www.bria.com.ph/wp-content/uploads/2023/07/Waste-Management.png');
+  background-size: cover; 
+  background-position: center; 
+  background-repeat: no-repeat; 
+}
+
+.hero .wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: clamp(40px, 7vw, 96px);
+  align-items: center;
+  min-width: 0;
+}
+
+.hero .wrap>* {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.hero h1 {
+  font-size: clamp(2.6rem, 4.8vw, 4.2rem);
+  font-weight: 700;
+  letter-spacing: -.035em;
+  max-width: 14ch;
+  margin-bottom: 22px;
+}
+
+.hero p.lead {
+  color: #c4cecb;
+  max-width: 58ch;
+  margin-bottom: 30px;
+  font-size: 1.08rem;
+}
+
+.hero .actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.overview {
+  min-width: 0;
+  background: #172630;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 28px;
+}
+
+.overview-head {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  font-size: .9rem;
+}
+
+.overview-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.overview-stats div {
+  background: #101d25;
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  color: var(--muted);
+  font-size: .9rem;
+}
+
+.overview-stats b {
+  display: block;
+  color: var(--orange);
+  font-size: 1.8rem;
+  line-height: 1.1;
+}
+
+.overview li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-width: 0;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+  font-size: .95rem;
+}
+
+.section {
+  padding: clamp(64px, 8vw, 104px) 0;
+}
+
+.section.alt {
+  background: var(--bg-alt);
+}
+
+#features .card,
+#rewards .card,
+#roles .card {
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  padding: 22px 0 4px;
+}
+
+#features .card:hover,
+#rewards .card:hover,
+#roles .card:hover {
+  background: transparent;
+  border-color: var(--orange);
+}
+
+.section h2 {
+  font-size: clamp(1.7rem, 3.5vw, 2.2rem);
+  margin-bottom: 8px;
+}
+
+.section .sub {
+  color: var(--muted);
+  margin-bottom: 30px;
+  max-width: 560px;
+}
+
+.note {
+  color: var(--muted);
+  font-size: .85rem;
+  margin-top: 18px;
+}
+
+.price {
+  color: var(--blue);
+  font-weight: 700;
+  font-size: 1.15rem;
+}
+
+.center {
+  text-align: center;
+}
+
+.center .sub {
+  margin-inline: auto;
+}
+
+.podium {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--gap);
+  align-items: end;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.podium .card {
+  text-align: center;
+}
+
+.podium .first {
+  border-color: #8a6a1e;
+  padding-block: 34px;
+}
+
+.rank {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 8px;
+  font-weight: 700;
+  color: #1a1200;
+  background: #b9c2cf;
+}
+
+.first .rank {
+  background: #f2c21b;
+}
+
+.rank.r3 {
+  background: #d38b4e;
+}
+
+.podium .pct {
+  color: var(--blue);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.podium .meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: .8rem;
+  color: var(--muted);
+  margin-top: 8px;
+}
+
+.steps li {
+  border-top: 1px solid var(--line);
+  padding: 14px 0 0;
+}
+
+.steps h3 {
+  font-size: 1.05rem;
+  margin: 4px 0;
+}
+
+.steps p {
+  color: var(--muted);
+  font-size: .92rem;
+}
+
+.site-footer {
+  text-align: center;
+  padding: 40px 0;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: .9rem;
+  background: #080f14;
+}
+
+.site-footer .logo {
+  color: #fff;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.nav-burger::before {
+  content: "";
+  display: block;
+  width: 20px;
+  height: 2px;
+  margin: auto;
+  background: currentColor;
+  box-shadow: 0 6px currentColor, 0 -6px currentColor;
+}
+
+.nav-toggle:focus-visible + .nav-burger {
+  outline: 2px solid var(--orange);
+  outline-offset: 2px;
+}
+/* Landing page content width: wide margins on desktop, compact on phones. */
+.wrap {
+  width: min(80%, 1160px);
+  margin-inline: auto;
+}
+
+@media (max-width: 1024px) {
+  .hero .wrap {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 860px) {
+  .nav-burger {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    margin-left: auto;
+    padding: 0;
+    font-size: 0;
+  }
+
+  .site-header .wrap,
+  .hero .wrap,
+  .wrap {
+    width: calc(100% - 40px);
+  }
+
+  .hero {
+    min-height: 0;
+    padding: 72px 0;
+  }
+
+  .hero .wrap {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .site-nav {
+    position: absolute;
+    top: 66px;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .3s ease;
+  }
+
+  .site-nav a {
+    padding: 14px 24px;
+  }
+
+  .site-nav .btn {
+    margin: 12px 24px;
+  }
+
+  .nav-toggle:checked ~ .site-nav {
+    max-height: 520px;
+  }
+}

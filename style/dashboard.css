@@ -1,0 +1,485 @@
+/* 7. DASHBOARD SHELL --------------------------------------- */
+.shell {
+  display: grid;
+  grid-template-columns: var(--side-w) minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.sidebar {
+  background: #0e1920;
+  border-right: 1px solid var(--line);
+  padding: 28px 20px;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.sidebar .logo {
+  padding-left: 12px;
+}
+
+.sidebar .ws {
+  color: var(--muted);
+  font-size: .9rem;
+  padding: 4px 12px 24px;
+}
+
+.nav {
+  display: grid;
+  gap: 6px;
+}
+
+.nav a {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  color: var(--muted);
+  font-weight: 500;
+  transition: background var(--ease), color var(--ease);
+}
+
+.nav a::before {
+  content: "";
+  width: 3px;
+  height: 18px;
+  border-radius: 2px;
+  background: #52656b;
+  margin-inline: 4px 5px;
+}
+
+.nav a:hover {
+  background: #1a2c34;
+  color: var(--text);
+}
+
+.nav .count {
+  margin-left: auto;
+  background: var(--orange);
+  color: #1a1200;
+  border-radius: 99px;
+  min-width: 26px;
+  text-align: center;
+  font-size: .8rem;
+  font-weight: 700;
+  padding: 2px 8px;
+}
+
+.me {
+  margin-top: auto;
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+
+.me-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.me-info small {
+  display: block;
+  color: var(--muted);
+  font-size: .8rem;
+}
+
+.avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--orange);
+  color: #1a1200;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  flex: none;
+}
+
+.avatar.lg {
+  width: 112px;
+  height: 112px;
+  font-size: 2.6rem;
+}
+
+.me .btn {
+  width: 100%;
+}
+
+.main {
+  padding: 40px 44px;
+  min-width: 0;
+}
+
+.view {
+  display: none;
+}
+
+/* Keep dashboard sections readable if the AOS CDN or initializer is unavailable. */
+html:not(.aos-ready) [data-aos] {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+.views:not(:has(.view:target))>.view:first-child {
+  display: block;
+}
+
+.view:target {
+  display: block;
+}
+
+.view>h1 {
+  font-size: 2.4rem;
+  font-weight: 700;
+}
+
+.view>.sub {
+  color: var(--muted);
+  margin: 6px 0 26px;
+}
+
+/* active nav link (CSS-only routing via :target) */
+.shell:not(:has(.view:target)) .nav a:first-child,
+.shell:has(#v1:target) .nav a[href="#v1"],
+.shell:has(#v2:target) .nav a[href="#v2"],
+.shell:has(#v3:target) .nav a[href="#v3"],
+.shell:has(#v4:target) .nav a[href="#v4"],
+.shell:has(#v5:target) .nav a[href="#v5"],
+.shell:has(#v6:target) .nav a[href="#v6"] {
+  background: #1d3038;
+  color: var(--orange);
+}
+
+.shell:not(:has(.view:target)) .nav a:first-child::before,
+.shell:has(#v1:target) .nav a[href="#v1"]::before,
+.shell:has(#v2:target) .nav a[href="#v2"]::before,
+.shell:has(#v3:target) .nav a[href="#v3"]::before,
+.shell:has(#v4:target) .nav a[href="#v4"]::before,
+.shell:has(#v5:target) .nav a[href="#v5"]::before,
+.shell:has(#v6:target) .nav a[href="#v6"]::before {
+  background: var(--orange);
+}
+
+.view {
+  scroll-margin-top: 0;
+}
+
+/* 8. DASHBOARD PARTS --------------------------------------- */
+.stat {
+  padding: 22px 24px;
+}
+
+.stat small {
+  color: var(--muted);
+  font-size: 1rem;
+}
+
+.stat b {
+  display: block;
+  font-size: 2.6rem;
+  line-height: 1.2;
+  color: var(--blue);
+}
+
+.stat b.o {
+  color: var(--orange);
+}
+
+.card h2 {
+  font-size: 1.5rem;
+  margin-bottom: 18px;
+}
+
+.rows>li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 0;
+  border-top: 1px solid var(--line);
+}
+
+.rows>li:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.rows>li:last-child {
+  padding-bottom: 0;
+}
+
+.rows strong {
+  display: block;
+  font-size: 1.1rem;
+}
+
+.rows small {
+  color: var(--muted);
+}
+
+.rows .acts {
+  display: flex;
+  gap: 10px;
+  flex: none;
+}
+
+.rows .dd {
+  display: flex;
+  gap: 10px;
+  flex: none;
+}
+
+.rows select {
+  background: var(--input);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font: 1rem var(--font);
+}
+
+.rows a.pin {
+  color: var(--blue);
+  text-decoration: underline;
+}
+
+.compliance li {
+  margin-bottom: 16px;
+}
+
+.compliance li>div {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.tabs span {
+  padding: 10px 24px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--muted);
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--ease);
+}
+
+.tabs span:hover {
+  color: var(--text);
+}
+
+.tabs .on {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: #1a1200;
+  font-weight: 600;
+}
+
+.zone {
+  padding: 24px;
+}
+
+.zone h3 {
+  font-size: 1.4rem;
+  margin: 8px 0 6px;
+}
+
+.zone p {
+  color: var(--muted);
+  margin-bottom: 18px;
+}
+
+.zone.mine {
+  border-color: var(--orange);
+}
+
+.profile-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.profile-head small {
+  color: var(--muted);
+  width: 100%;
+}
+
+.hist .plus {
+  color: #4be08a;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.points-hero {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: #172a32;
+  border-color: #38535a;
+}
+
+.ring {
+  --p: 64;
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  flex: none;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding-right: 24px;
+  border-right: 1px solid var(--line);
+}
+
+.ring b {
+  display: block;
+  font-size: 2.4rem;
+  color: var(--orange);
+  line-height: 1;
+}
+
+.ring small {
+  color: var(--muted);
+}
+
+.chip {
+  display: inline-block;
+  background: #3b3a2e;
+  color: var(--orange);
+  font-weight: 600;
+  border-radius: 99px;
+  padding: 4px 14px;
+  font-size: .9rem;
+  margin-bottom: 8px;
+}
+
+.points-hero h2 {
+  margin-bottom: 6px;
+}
+
+.mini {
+  text-align: center;
+  padding: 20px;
+}
+
+.mini b {
+  display: block;
+  color: var(--blue);
+  font-size: 1.8rem;
+}
+
+.mini small {
+  color: var(--muted);
+}
+
+.big-rank {
+  font-size: 2.6rem;
+  font-weight: 700;
+  color: var(--orange);
+}
+
+/* Dashboard-only responsive behavior. */
+@media (max-width: 1024px) {
+  .main {
+    padding: 32px 26px;
+  }
+
+  .split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 860px) {
+  .shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sidebar {
+    position: static;
+    height: auto;
+    padding: 16px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .sidebar .ws {
+    padding: 0;
+    flex: 1;
+  }
+
+  .nav {
+    order: 3;
+    width: 100%;
+    display: flex;
+    overflow-x: auto;
+    gap: 6px;
+    padding-bottom: 4px;
+  }
+
+  .nav a {
+    flex: none;
+    padding: 10px 14px;
+  }
+
+  .me {
+    order: 2;
+    margin: 0;
+    border: 0;
+    padding: 0;
+  }
+
+  .me-info {
+    display: none;
+  }
+
+  .main {
+    padding: 24px 16px;
+  }
+
+  .view > h1 {
+    font-size: 1.9rem;
+  }
+
+  .points-hero {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+@media (max-width: 600px) {
+  .rows > li {
+    flex-wrap: wrap;
+  }
+
+  .rows > li > :first-child {
+    flex: 1 1 100%;
+  }
+
+  .rows .acts,
+  .rows .dd {
+    width: 100%;
+  }
+
+  .rows .acts .btn,
+  .rows .dd select {
+    flex: 1;
+  }
+}
