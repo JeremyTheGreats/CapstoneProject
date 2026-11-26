@@ -1,3 +1,41 @@
+/* ---- extra button variants ---- */
+.btn-red {
+    background: #c0392b;
+    color: #fff;
+    border-color: transparent;
+}
+
+.btn-red:hover {
+    background: #e74c3c;
+}
+
+/* ---- account status badges (in table) ---- */
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 99px;
+    font-size: .82rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.status-badge.pending  { background: var(--warn-bg); color: var(--warn); }
+.status-badge.active   { background: var(--good-bg); color: var(--good); }
+.status-badge.inactive { background: #3a1f24; color: #ffb3bf; }
+
+/* ---- approve/reject action group ---- */
+.action-group {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* ---- b-role badge (used in account table) ---- */
+.b-role {
+    background: #1a3050;
+    color: var(--blue);
+}
+
 .sidebar {
         overflow-y: auto
     }

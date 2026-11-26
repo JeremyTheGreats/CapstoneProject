@@ -14,10 +14,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $confirm = $_POST['confirm'] ?? '';
 
     if (!empty($fname) && !empty($lname) && !empty($email) && !empty($phone) && !empty($address) && !empty($password) && !empty($confirm)) {
-        if ($password !== $confirm) {
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $message = "Please enter a valid email address.";
+        } elseif (strlen($password) < 8) {
+            $message = "Password must be at least 8 characters.";
+        } elseif ($password !== $confirm) {
             $message = "Passwords do not match.";
         } else {
-            $check_sql = "SELECT id FROM users WHERE email = ?";
+            $check_sql = "SELECT ID FROM users WHERE email = ?";
             $check_stmt = mysqli_prepare($conn, $check_sql);
             mysqli_stmt_bind_param($check_stmt, "s", $email);
             mysqli_stmt_execute($check_stmt);

@@ -2,6 +2,9 @@
 config/secrets.php
 config/secrets.ini
 .env
+uploads/reports/*
+!uploads/reports/.htaccess
+!uploads/reports/index.html
 
 # Editor / OS junk
 .DS_Store

@@ -1,68 +1,43 @@
 <?php
 session_start();
-require_once "../config/db.php";
-
-
-if (!isset($_SESSION['User_id']) || strtolower($_SESSION['User_role'] ?? '') !== 'admin') {
-    header("Location: login.php");
-    exit();
+if (empty($_SESSION['User_id']) || strtolower((string)($_SESSION['User_role'] ?? '')) !== 'admin') {
+    header('Location: login.php'); exit;
 }
-
-if (isset($_GET['id']) && isset($_GET['action'])) {
-    $userId = intval($_GET['id']);
-    $action = strtolower(trim($_GET['action']));
-
-    if ($userId <= 0) {
-        header("Location: admin-dashboard.php?error=invalid_id#v2");
-        exit();
-    }
-
-    // 2. Fetch target user role and current status
-    $stmt = mysqli_prepare($conn, "SELECT role, status FROM users WHERE ID = ? LIMIT 1");
-    mysqli_stmt_bind_param($stmt, "i", $userId);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-    $user = mysqli_fetch_assoc($result);
-    mysqli_stmt_close($stmt);
-
-    if (!$user) {
-        header("Location: admin-dashboard.php?error=user_not_found#v2");
-        exit();
-    }
-
-    // 3. Prevent modifying Admin accounts
-    if (strtolower($user['role']) === 'admin') {
-        header("Location: admin-dashboard.php?error=cannot_modify_admin#v2");
-        exit();
-    }
-
-    // 4. Determine new status
-    if ($action === 'approve') {
-        $newStatus = 'active';
-    } elseif ($action === 'reject') {
-        $newStatus = 'inactive';
-    } elseif ($action === 'toggle') {
-        $newStatus = (strtolower($user['status']) === 'active') ? 'Inactive' : 'Active';
-    } else {
-        header("Location: admin-dashboard.php?error=invalid_action#v2");
-        exit();
-    }
-
-    // 5. Update database
-    $upd = mysqli_prepare($conn, "UPDATE users SET status = ? WHERE ID = ?");
-    mysqli_stmt_bind_param($upd, "si", $newStatus, $userId);
-
-    if (mysqli_stmt_execute($upd)) {
-        mysqli_stmt_close($upd);
-        header("Location: admin-dashboard.php?success=status_updated#v2");
-        exit();
-    } else {
-        mysqli_stmt_close($upd);
-        header("Location: admin-dashboard.php?error=update_failed#v2");
-        exit();
-    }
-} else {
-    header("Location: admin-dashboard.php?error=missing_params#v2");
-    exit();
+require_once __DIR__ . '/../config/dashboard.php';
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !hash_equals((string)($_SESSION['csrf_token'] ?? ''), (string)($_POST['csrf_token'] ?? ''))) {
+    http_response_code(400); exit('Invalid form submission. Reload the page and try again.');
 }
-?>
+$id = (int)($_POST['id'] ?? 0);
+$action = strtolower((string)($_POST['action'] ?? ''));
+if ($id < 1 || !in_array($action, ['approve','reject','toggle','set_role'], true)) {
+    $_SESSION['dashboard_notice'] = 'Invalid account action.';
+    header('Location: admin-dashboard.php#v2'); exit;
+}
+$stmt = $conn->prepare('SELECT role,status FROM users WHERE ID=?');
+$stmt->bind_param('i', $id); $stmt->execute(); $target = $stmt->get_result()->fetch_assoc();
+if (!$target || strtolower($target['role']) === 'admin') {
+    $_SESSION['dashboard_notice'] = $target ? 'Administrator accounts cannot be changed here.' : 'Account not found.';
+    header('Location: admin-dashboard.php#v2'); exit;
+}
+if ($action === 'set_role') {
+    $role = (string)($_POST['role'] ?? '');
+    $roleMap = ['resident'=>'Resident', 'collector'=>'Collector', 'official'=>'Official'];
+    if (!isset($roleMap[strtolower($role)])) {
+        $_SESSION['dashboard_notice'] = 'Choose a valid non-admin role.';
+        header('Location: admin-dashboard.php#v2'); exit;
+    }
+    $role = $roleMap[strtolower($role)];
+    $update = $conn->prepare("UPDATE users SET role=?, status='pending' WHERE ID=?");
+    $update->bind_param('si', $role, $id); $update->execute();
+    $_SESSION['dashboard_notice'] = 'Account role updated.';
+    header('Location: admin-dashboard.php#v2'); exit;
+}
+$status = match ($action) {
+    'approve' => 'active',
+    'reject' => 'inactive',
+    'toggle' => strtolower($target['status']) === 'active' ? 'inactive' : 'active',
+};
+$update = $conn->prepare('UPDATE users SET status=? WHERE ID=?');
+$update->bind_param('si', $status, $id); $update->execute();
+$_SESSION['dashboard_notice'] = 'Account status updated.';
+header('Location: admin-dashboard.php#v2'); exit;

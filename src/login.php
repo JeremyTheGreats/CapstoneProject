@@ -6,7 +6,7 @@ $message = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = trim($_POST['email'] ?? '');
-    $password = trim($_POST['password'] ?? '');
+    $password = $_POST['password'] ?? '';
 
     if (!empty($email) && !empty($password)) {
         $sql = "SELECT ID, fname, lname, password, role, status, provider FROM users WHERE email = ? LIMIT 1";
@@ -21,6 +21,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $message = "This account uses $provider Sign-In. Please log in with $provider.";
             } elseif (password_verify($password, $user['password'])) {
                 if (strtolower($user['status']) === 'active') {
+                    session_regenerate_id(true);
                     $_SESSION['User_fname'] = $user['fname'];
                     $_SESSION['User_lname'] = $user['lname'];
                     $_SESSION['User_role'] = $user['role'];

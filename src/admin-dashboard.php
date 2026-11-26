@@ -1,590 +1,204 @@
-<!DOCTYPE html>
+<?php
+session_start();
+if(empty($_SESSION['User_id'])||strtolower((string)($_SESSION['User_role']??''))!=='admin'){header('Location: login.php');exit;}
+require_once __DIR__.'/../config/dashboard.php';$uid=(int)$_SESSION['User_id'];
+$stmt=$conn->prepare('SELECT fname,lname,email,phone,address FROM users WHERE ID=?');$stmt->bind_param('i',$uid);$stmt->execute();$user=$stmt->get_result()->fetch_assoc()?:[];
+$users=$conn->query('SELECT ID,fname,lname,email,address,role,status FROM users ORDER BY ID DESC')->fetch_all(MYSQLI_ASSOC);
+$reports=$conn->query("SELECT wr.*,u.fname,u.lname FROM waste_reports wr JOIN users u ON u.ID=wr.user_id ORDER BY FIELD(wr.status,'pending','verified','resolved','rejected'),wr.created_at DESC")->fetch_all(MYSQLI_ASSOC);
+$observations=$conn->query("SELECT o.*,c.fname collector_fname,c.lname collector_lname,r.fname resident_fname,r.lname resident_lname FROM segregation_observations o JOIN users c ON c.ID=o.collector_id JOIN users r ON r.ID=o.resident_id ORDER BY FIELD(o.status,'pending','approved','rejected'),o.created_at DESC")->fetch_all(MYSQLI_ASSOC);
+$claims=$conn->query("SELECT rc.claim_id,rc.points_spent,rc.status,rc.claimed_at,u.fname,u.lname,r.reward_name FROM reward_claims rc JOIN users u ON u.ID=rc.user_id JOIN rewards r ON r.reward_id=rc.reward_id ORDER BY FIELD(rc.status,'pending','claimed','cancelled'),rc.claimed_at DESC")->fetch_all(MYSQLI_ASSOC);
+$schedules=$conn->query("SELECT cs.*,u.fname,u.lname FROM collection_schedules cs LEFT JOIN users u ON u.ID=cs.collector_id ORDER BY cs.schedule_date DESC,cs.start_time DESC LIMIT 100")->fetch_all(MYSQLI_ASSOC);
+$collectors=$conn->query("SELECT ID,fname,lname FROM users WHERE LOWER(role)='collector' AND LOWER(status)='active' ORDER BY fname,lname")->fetch_all(MYSQLI_ASSOC);
+$rewards=$conn->query('SELECT reward_id,reward_name,description,points_required,stock_qty,is_active FROM rewards ORDER BY reward_name')->fetch_all(MYSQLI_ASSOC);
+$pending=(int)$conn->query("SELECT COUNT(*) c FROM users WHERE LOWER(status)='pending'")->fetch_assoc()['c'];$notice=dashboard_notice();
+?>
+<!doctype html>
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" href="logo.png">
-    <title>Administrator – BarangayEcoCare</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Administrator dashboard – BarangayEcoCare</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap">
     <link rel="stylesheet" href="../style/global.css">
     <link rel="stylesheet" href="../style/dashboard.css">
     <link rel="stylesheet" href="../style/admin-dashboard.css">
-    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css">
-
 </head>
 
 <body>
-
-    <?php
-
-    session_start();
-
-    if (isset($_SESSION['User_role']) != 'Admin') {
-        header("Location: login.php");
-        exit();
-    }
-
-    include "../config/db.php";
-
-    $sql = "SELECT ID, fname, lname, email, phone, address, role, status FROM users ORDER BY ID DESC";
-    $result = mysqli_query($conn, $sql);
-
-    ?>
-
     <div class="shell">
-
         <aside class="sidebar">
-            <div>
-                <a href="#" class="logo"><img src="../images/spark.png" alt="" width="40"
-                        height="40">Barangay<b>EcoCare</b></a>
+            <div><a href="../index.php" class="logo">Barangay<b>EcoCare</b></a>
                 <p class="ws">Administrator · full access</p>
             </div>
-            <nav class="nav" aria-label="Dashboard">
-                <a href="#v1" data-i="⌂">Overview</a>
-                <a href="#v2" data-i="✔">Account approvals <span class="count" id="nav-pending">4</span></a>
-                <span class="nav-label">System</span>
-                <a href="#v6" data-i="▦">Zones &amp; schedule</a>
-                <a href="#v7" data-i="★">Rewards &amp; rules</a>
-                <a href="#v8" data-i="ıl">Reports</a>
-                <a href="#v9" data-i="📋">Audit log</a>
-                <a href="#v10" data-i="👤">Profile</a>
-            </nav>
+            <nav class="nav"><a href="#v1">Overview</a><a href="#v2">Accounts <span
+                        class="count"><?=$pending?></span></a><a href="#v3">Reports</a><a href="#v4">Schedules</a><a
+                    href="#v5">Rewards</a><a href="#v6">Redemptions</a><a href="#v7">Profile</a><a href="#v8">Segregation</a></nav>
             <div class="me">
-                <div class="me-info"><span class="avatar">A</span>
-                    <div><?php echo $_SESSION['User_fname'], " ", $_SESSION['User_lname']; ?><small>Administrator</small></div>
-                </div>
-                <a href="logout.php" class="btn">Log out</a>
+                <div class="me-info"><span class="avatar"><?=e(strtoupper(substr($user['fname']??'A',0,1)))?></span>
+                    <div><?=e(($user['fname']??'').' '.($user['lname']??''))?><small>Administrator</small></div>
+                </div><a href="logout.php" class="btn">Log out</a>
             </div>
         </aside>
-
         <main class="main">
-            <div class="views">
-
-                <!-- 1. OVERVIEW -->
-                <section class="view" data-aos="fade-up" id="v1">
+            <div class="views"><?php if($notice):?><p class="notice" role="status"><?=e($notice)?></p><?php endif;?>
+                <section class="view" id="v1">
                     <h1>Admin overview</h1>
-                    <p class="sub">System-wide activity for the barangay.</p>
-                    <div class="grid g4" style="margin-bottom:var(--gap)">
-                        <div class="card stat"><small>Registered users</small><b>412</b></div>
-                        <div class="card stat"><small>Open tickets</small><b class="o">24</b></div>
-                        <div class="card stat"><small>Points awarded (Oct)</small><b>8,640</b></div>
-                        <div class="card stat"><small>Accounts awaiting approval</small><b class="o"
-                                id="stat-pending">4</b></div>
-                    </div>
-                    <div class="grid g2" style="margin-bottom:var(--gap)">
-                        <article class="card">
-                            <h2>Users by role</h2>
-                            <ul class="compliance">
-                                <li>
-                                    <div><span>Residents</span><b>384</b></div>
-                                    <div class="bar"><i style="width:93%"></i></div>
-                                </li>
-                                <li>
-                                    <div><span>Garbage collectors</span><b>12</b></div>
-                                    <div class="bar"><i style="width:15%"></i></div>
-                                </li>
-                                <li>
-                                    <div><span>Barangay staff</span><b>14</b></div>
-                                    <div class="bar"><i style="width:17%"></i></div>
-                                </li>
-                                <li>
-                                    <div><span>Administrators</span><b>2</b></div>
-                                    <div class="bar"><i style="width:4%"></i></div>
-                                </li>
-                            </ul><small class="muted">Sample data</small>
+                    <p class="sub">Current activity from the database.</p>
+                    <div class="grid g4">
+                        <article class="card stat"><small>Registered users</small><b><?=count($users)?></b></article>
+                        <article class="card stat"><small>Open
+                                reports</small><b><?=count(array_filter($reports,fn($r)=>in_array($r['status'],['pending','verified'],true)))?></b>
                         </article>
-                        <article class="card">
-                            <h2>Needs your attention</h2>
-                            <ul class="rows">
-                                <li>
-                                    <div><strong>New account requests</strong><small>Only you can approve or reject
-                                            them</small></div><a href="#v2" class="btn btn-primary btn-sm">Review</a>
-                                </li>
-                                <li>
-                                    <div><strong>Zone 1 not collected</strong><small>Truck breakdown · reported by Crew
-                                            A</small></div><span class="badge b-pending">Needs attention</span>
-                                </li>
-                            </ul>
+                        <article class="card stat"><small>Pending approvals</small><b><?=$pending?></b></article>
+                        <article class="card stat"><small>Reward
+                                claims</small><b><?=count(array_filter($claims,fn($c)=>$c['status']==='pending'))?></b>
                         </article>
                     </div>
                 </section>
-
-                <!-- 2. ACCOUNT APPROVALS -->
-                <section class="view" data-aos="fade-up" id="v2">
+                <section class="view" id="v2">
                     <h1>Account approvals</h1>
-                    <p class="sub">Residents, garbage collectors, and barangay staff sign up on their own. Their
-                        accounts stay inactive until you approve them.</p>
-                    <p class="notice"><b>Admin-only approval.</b> No one else can approve accounts, and invitation links
-                        are no longer used. Review each request, set the zone for collectors or permissions for staff,
-                        then approve.</p>
-                    <div class="ptabs" id="acct-filter" role="group" aria-label="Filter accounts">
-                        <button type="button" aria-selected="false" data-f="all">All</button>
-                        <button type="button" aria-selected="true" data-f="pending">Pending <span class="ptab-n"
-                                id="pending-n">4</span></button>
-                        <button type="button" aria-selected="false" data-f="active">Active</button>
-                        <button type="button" aria-selected="false" data-f="inactive">Inactive / Rejected</button>
-                    </div>
-
-                    <div class="card table-wrap">
-                        <table class="table" id="acct-table">
+                    <p class="sub">Review resident, collector, and official accounts.</p>
+                    <article class="card table-wrap">
+                        <table class="table">
                             <thead>
                                 <tr>
-                                    <th>Name</th>
+                                    <th>Name / email</th>
                                     <th>Role</th>
-                                    <th>Purok / Zone</th>
+                                    <th>Area</th>
                                     <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php
-                                if (mysqli_num_rows($result) > 0) {
-                                    while ($row = mysqli_fetch_assoc($result)) {
-                                        // Map database status values to your HTML attributes (pending, active, inactive)
-                                        $status = strtolower($row['status'] ?? 'pending');
-                                        $role = htmlspecialchars($row['role']);
-                                        $fullName = htmlspecialchars($row['fname'] . ' ' . $row['lname']);
-                                        $email = htmlspecialchars($row['email']);
-                                        $purok = htmlspecialchars($row['purok'] ?? 'Not assigned');
-                                        $userId = $row['ID'];
-                                        ?>
-                                        <tr data-status="<?php echo $status; ?>" data-role="<?php echo $role; ?>"
-                                            data-name="<?php echo $fullName; ?>">
-                                            <td>
-                                                <strong>
-                                                    <?php echo $fullName; ?>
-                                                </strong><br>
-                                                <small class="muted">
-                                                    <?php echo $email; ?>
-                                                </small>
-                                            </td>
-                                            <td><span class="badge b-role">
-                                                    <?php echo $role; ?>
-                                                </span></td>
-                                            <td class="loc">
-                                                <?php echo $purok; ?>
-                                            </td>
-                                            <td class="st">
-                                                <!-- Status badge indicator -->
-                                                <span class="status-badge <?php echo $status; ?>">
-                                                    <?php echo ucfirst($status); ?>
-                                                    
-                                                </span>
-                                            </td>
-
-                                            <td class="ac">
-                                                <?php if (strtolower($role) === 'admin') { ?>
-                                                    <span class="muted" style="font-size: 13px; font-style: italic;">Protected (Admin)</span>
-                                                <?php } elseif ($status === 'pending') { ?>
-                                                    <div class="action-group">
-                                                        <a href="approve_user.php?id=<?php echo $userId; ?>&action=approve"
-                                                        class="btn btn-primary btn-sm">Approve</a>
-                                                        <a href="approve_user.php?id=<?php echo $userId; ?>&action=reject"
-                                                        class="btn btn-red btn-sm">Reject</a>
-                                                    </div>
-                                                <?php } else { ?>
-                                                    <a href="approve_user.php?id=<?php echo $userId; ?>&action=toggle"
-                                                    class="btn btn-blue btn-sm">Change Status</a>
-                                                <?php } ?>
-                                            </td>
-                                        </tr>
-                                        <?php
-                                    }
-                                } else {
-                                    echo '<tr><td colspan="5" style="text-align:center; padding: 20px;">No accounts found in the database.</td></tr>';
-                                }
-                                ?>
-                            </tbody>
-                        </table>
-                        <p class="muted" id="acct-empty" hidden style="padding:16px 12px 0">No accounts in this list.
-                        </p>
-                    </div>
-
-                    <article class="card" style="margin-top:var(--gap)">
-                        <h2>Role guide</h2>
-                        <ul class="rows">
-                            <li>
-                                <div><strong>Resident</strong><small>Reports waste problems, tracks tickets, earns and
-                                        redeems points.</small></div><span class="badge b-role">Sign-up · admin
-                                    approves</span>
-                            </li>
-                            <li>
-                                <div><strong>Garbage Collector</strong><small>Sees assigned zone, route checklist, and
-                                        records observations.</small></div><span class="badge b-role">Sign-up · admin
-                                    approves</span>
-                            </li>
-                            <li>
-                                <div><strong>Barangay Staff</strong><small>Verifies reports, tracks collections,
-                                        approves redemptions per permissions.</small></div><span
-                                    class="badge b-role">Sign-up · admin approves</span>
-                            </li>
-                            <li>
-                                <div><strong>Administrator</strong><small>Approves accounts, manages roles, rules, and
-                                        has full access to all dashboards.</small></div><span
-                                    class="badge b-pending">Restricted</span>
-                            </li>
-                        </ul>
-                    </article>
-                </section>
-
-                <!-- 6. ZONES & SCHEDULE -->
-                <section class="view" data-aos="fade-up" id="v6">
-                    <h1>Zones &amp; schedule</h1>
-                    <p class="sub">Set the collection days, time, and crew for each zone.</p>
-                    <div class="grid g3">
-                        <form class="card zone" action="#"><span class="eyebrow">Zone 1</span>
-                            <h3>Purok 1 to 3</h3>
-                            <label class="field"><span>Days</span><input value="Mon and Thu"></label>
-                            <label class="field"><span>Time</span><input type="time" value="06:00"></label>
-                            <label class="field"><span>Crew</span><select>
-                                    <option selected>Crew A</option>
-                                    <option>Crew B</option>
-                                    <option>Crew C</option>
-                                </select></label>
-                            <button class="btn btn-primary btn-sm">Save</button>
-                        </form>
-                        <form class="card zone" action="#"><span class="eyebrow">Zone 2</span>
-                            <h3>Purok 4 to 6</h3>
-                            <label class="field"><span>Days</span><input value="Tue and Fri"></label>
-                            <label class="field"><span>Time</span><input type="time" value="06:00"></label>
-                            <label class="field"><span>Crew</span><select>
-                                    <option>Crew A</option>
-                                    <option selected>Crew B</option>
-                                    <option>Crew C</option>
-                                </select></label>
-                            <button class="btn btn-primary btn-sm">Save</button>
-                        </form>
-                        <form class="card zone" action="#"><span class="eyebrow">Zone 3</span>
-                            <h3>Purok 7 to 9</h3>
-                            <label class="field"><span>Days</span><input value="Wed and Sat"></label>
-                            <label class="field"><span>Time</span><input type="time" value="06:00"></label>
-                            <label class="field"><span>Crew</span><select>
-                                    <option>Crew A</option>
-                                    <option>Crew B</option>
-                                    <option selected>Crew C</option>
-                                </select></label>
-                            <button class="btn btn-primary btn-sm">Save</button>
-                        </form>
-                    </div>
-                </section>
-
-                <!-- 7. REWARDS & RULES -->
-                <section class="view" data-aos="fade-up" id="v7">
-                    <h1>Rewards &amp; rules</h1>
-                    <p class="sub">Manage incentives, point values, and badges. Rewards are point-based only.</p>
-                    <div class="toolbar"><button class="btn btn-primary">Add reward</button></div>
-                    <div class="card table-wrap">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Reward</th>
-                                    <th>Points</th>
-                                    <th>Stock</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td><strong>Grocery pack</strong></td>
-                                    <td class="big-num" style="font-size:1.1rem">500</td>
-                                    <td>20</td>
-                                    <td><span class="badge b-done">Active</span></td>
-                                    <td>
-                                        <div class="acts"><button class="btn btn-sm">Edit</button><button
-                                                class="btn btn-sm">Disable</button></div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Reusable eco bag</strong></td>
-                                    <td class="big-num" style="font-size:1.1rem">200</td>
-                                    <td>85</td>
-                                    <td><span class="badge b-done">Active</span></td>
-                                    <td>
-                                        <div class="acts"><button class="btn btn-sm">Edit</button><button
-                                                class="btn btn-sm">Disable</button></div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Seedling kit</strong></td>
-                                    <td class="big-num" style="font-size:1.1rem">150</td>
-                                    <td>40</td>
-                                    <td><span class="badge b-done">Active</span></td>
-                                    <td>
-                                        <div class="acts"><button class="btn btn-sm">Edit</button><button
-                                                class="btn btn-sm">Disable</button></div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <article class="card" style="margin-top:var(--gap)">
-                        <h2>Community points (purok-wide)</h2>
-                        <p class="notice">On each collection schedule: perfect purok earns the top amount, the purok
-                            closest to perfect earns the middle amount, and the rest earn the base amount, per resident.
-                        </p>
-                        <form action="#">
-                            <div class="grid g3">
-                                <label class="field"><span>Perfect purok (points each)</span><input type="number"
-                                        min="0" value="15"></label>
-                                <label class="field"><span>Closest to perfect (points each)</span><input type="number"
-                                        min="0" value="10"></label>
-                                <label class="field"><span>All other puroks (points each)</span><input type="number"
-                                        min="0" value="5"></label>
-                            </div>
-                            <button class="btn btn-primary" type="submit">Save community rules</button>
-                        </form>
-                    </article>
-                    <article class="card" style="margin-top:var(--gap)">
-                        <h2>Report rewards (individual)</h2>
-                        <p class="notice">Points are given only after Barangay Staff verify the report.</p>
-                        <form action="#">
-                            <div class="grid g3">
-                                <label class="field"><span>Illegal dumping (points)</span><input type="number" min="0"
-                                        value="15"></label>
-                                <label class="field"><span>Overflowing garbage (points)</span><input type="number"
-                                        min="0" value="15"></label>
-                                <label class="field"><span>Duplicate window (hours, same location)</span><input
-                                        type="number" min="0" value="48"></label>
-                                <label class="field"><span>Welcome bonus (one time, first sign-in)</span><input
-                                        type="number" min="0" value="20"></label>
-                            </div>
-                            <div class="toolbar"><label class="check"><input type="checkbox" checked disabled> No points
-                                    for pending or rejected reports</label><label class="check"><input type="checkbox"
-                                        checked> Block duplicate reports of the same incident</label><label
-                                    class="check"><input type="checkbox" checked> Record every staff and admin action in
-                                    the audit log</label></div>
-                            <button class="btn btn-primary" type="submit">Save report rules</button>
-                        </form>
-                    </article>
-                    <article class="card table-wrap" style="margin-top:var(--gap)">
-                        <h2>Badges</h2>
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Badge</th>
-                                    <th>Requirement</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td><strong>Eco Helper</strong></td>
-                                    <td>Reach 100 points</td>
-                                    <td><span class="badge b-done">Active</span></td>
-                                    <td>
-                                        <div class="acts"><button class="btn btn-sm">Edit</button></div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>First Report</strong></td>
-                                    <td>1 verified report</td>
-                                    <td><span class="badge b-done">Active</span></td>
-                                    <td>
-                                        <div class="acts"><button class="btn btn-sm">Edit</button></div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>4-week Streak</strong></td>
-                                    <td>Segregate 4 weeks in a row</td>
-                                    <td><span class="badge b-done">Active</span></td>
-                                    <td>
-                                        <div class="acts"><button class="btn btn-sm">Edit</button></div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Community Hero</strong></td>
-                                    <td>5 community rewards</td>
-                                    <td><span class="badge b-done">Active</span></td>
-                                    <td>
-                                        <div class="acts"><button class="btn btn-sm">Edit</button></div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Top Reporter</strong></td>
-                                    <td>10 verified reports</td>
-                                    <td><span class="badge b-done">Active</span></td>
-                                    <td>
-                                        <div class="acts"><button class="btn btn-sm">Edit</button></div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table><button class="btn btn-primary" style="margin-top:16px">Add badge</button>
-                    </article>
-                </section>
-
-                <!-- 8. REPORTS -->
-                <section class="view" data-aos="fade-up" id="v8">
-                    <h1>Reports</h1>
-                    <p class="sub">Compliance and ticket analytics.</p>
-                    <div class="grid g2">
-                        <article class="card">
-                            <h2>Segregation compliance by purok</h2>
-                            <ul class="compliance">
-                                <li>
-                                    <div><span>Purok 5</span><b>94%</b></div>
-                                    <div class="bar"><i style="width:94%"></i></div>
-                                </li>
-                                <li>
-                                    <div><span>Purok 2</span><b>89%</b></div>
-                                    <div class="bar"><i style="width:89%"></i></div>
-                                </li>
-                                <li>
-                                    <div><span>Purok 7</span><b>85%</b></div>
-                                    <div class="bar"><i style="width:85%"></i></div>
-                                </li>
-                                <li>
-                                    <div><span>Purok 4</span><b>78%</b></div>
-                                    <div class="bar"><i style="width:78%"></i></div>
-                                </li>
-                                <li>
-                                    <div><span>Purok 1</span><b>72%</b></div>
-                                    <div class="bar"><i style="width:72%"></i></div>
-                                </li>
-                            </ul><small class="muted">Sample data</small>
-                        </article>
-                        <article class="card">
-                            <h2>Tickets by status</h2>
-                            <ul class="compliance">
-                                <li>
-                                    <div><span>Pending</span><b>9</b></div>
-                                    <div class="bar"><i style="width:30%"></i></div>
-                                </li>
-                                <li>
-                                    <div><span>In Progress</span><b>15</b></div>
-                                    <div class="bar"><i style="width:50%"></i></div>
-                                </li>
-                                <li>
-                                    <div><span>Resolved</span><b>94</b></div>
-                                    <div class="bar"><i style="width:100%"></i></div>
-                                </li>
-                            </ul>
-                            <button class="btn" style="margin-top:8px">Export CSV</button>
-                        </article>
-                    </div>
-                </section>
-
-                <!-- 9. AUDIT LOG -->
-                <section class="view" data-aos="fade-up" id="v9">
-                    <h1>Audit log</h1>
-                    <p class="sub">Every staff and admin action that affects points, accounts, or rules.</p>
-                    <div class="toolbar"><input type="search" placeholder="Search by person or action"><button
-                            class="btn">Export CSV</button></div>
-                    <div class="card table-wrap">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>When</th>
-                                    <th>Who</th>
                                     <th>Action</th>
-                                    <th>Details</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Oct 8 · 8:10 AM</td>
-                                    <td>Admin Cruz<br><small class="muted">Admin</small></td>
-                                    <td>Approved account</td>
-                                    <td>Juan Dela Cruz · Resident</td>
-                                </tr>
-                                <tr>
-                                    <td>Oct 7 · 9:12 AM</td>
-                                    <td>Maria Santos<br><small class="muted">Staff</small></td>
-                                    <td>Verified report +15</td>
-                                    <td>Illegal dumping, Riverside, Purok 3 (Ana R.)</td>
-                                </tr>
-                                <tr>
-                                    <td>Oct 7 · 8:40 AM</td>
-                                    <td>Maria Santos<br><small class="muted">Staff</small></td>
-                                    <td>Reviewed collector report</td>
-                                    <td>Purok 4, Market area, 8 of 8 bins</td>
-                                </tr>
-                                <tr>
-                                    <td>Oct 6 · 4:05 PM</td>
-                                    <td>Admin Cruz<br><small class="muted">Admin</small></td>
-                                    <td>Changed rule</td>
-                                    <td>Community points per resident: 8 to 10</td>
-                                </tr>
-                                <tr>
-                                    <td>Oct 6 · 2:30 PM</td>
-                                    <td>Maria Santos<br><small class="muted">Staff</small></td>
-                                    <td>Marked as duplicate</td>
-                                    <td>Overflowing garbage, Purok 5 (no points)</td>
-                                </tr>
-                                <tr>
-                                    <td>Oct 5 · 6:50 AM</td>
-                                    <td>Rico Dela Peña<br><small class="muted">Collector</small></td>
-                                    <td>Submitted observation</td>
-                                    <td>Purok 5, Near chapel, 5 of 6 bins, evidence attached</td>
-                                </tr>
-                            </tbody>
+                            <tbody><?php foreach($users as $row):$status=strtolower($row['status']);?><tr>
+                                    <td><strong><?=e($row['fname'].' '.$row['lname'])?></strong><br><small><?=e($row['email'])?></small>
+                                    </td>
+                                    <td><?=e($row['role'])?></td>
+                                    <td><?=e($row['address']?:'—')?></td>
+                                    <td><?=e(ucfirst($status))?></td>
+                                    <td><?php if(strtolower($row['role'])==='admin'):?><span class="muted">Protected</span><?php elseif(!in_array(strtolower($row['role']),['resident','official','collector'],true)):?><form action="approve_user.php" method="post" class="acts"><?php dashboard_form_token();?><input type="hidden" name="id" value="<?=(int)$row['ID']?>"><input type="hidden" name="action" value="set_role"><select name="role" aria-label="Assign role"><option value="Resident">Resident</option><option value="Collector">Collector</option><option value="Official">Official</option></select><button class="btn btn-primary btn-sm">Set role</button></form><?php else:?><form action="approve_user.php" method="post" class="acts"><?php dashboard_form_token();?><input type="hidden" name="id" value="<?=(int)$row['ID']?>"><button class="btn btn-primary btn-sm" name="action" value="<?=$status==='pending'?'approve':'toggle'?>"><?=$status==='pending'?'Approve':'Toggle status'?></button><?php if($status==='pending'):?><button class="btn btn-sm" name="action" value="reject">Reject</button><?php endif;?></form><?php endif;?></td>
+                                </tr><?php endforeach;?></tbody>
                         </table>
-                        <div id="audit-new"></div>
-                    </div>
+                    </article>
                 </section>
-
-                <!-- 10. PROFILE -->
-                <section class="view" data-aos="fade-up" id="v10">
+                <section class="view" id="v3">
+                    <h1>Waste reports</h1>
+                    <article class="card">
+                        <ul class="rows"><?php if(!$reports):?><li><span class="muted">No reports submitted.</span></li>
+                            <?php else:foreach($reports as $r):?><li>
+                                <div><strong><?=e($r['category'])?> · <?=e($r['location_details'])?></strong><small>By
+                                        <?=e($r['fname'].' '.$r['lname'])?> ·
+                                        <?=e(date('M j, Y',strtotime($r['created_at'])))?></small><small><?=nl2br(e($r['description']))?></small><?php if($r['photo_path']):?><small><a
+                                            href="../<?=e($r['photo_path'])?>" target="_blank" rel="noopener">View
+                                            photo</a></small><?php endif;?></div>
+                                <form action="dashboard-action.php" method="post" class="acts">
+                                    <?php dashboard_form_token();?><input type="hidden" name="action"
+                                        value="report_status"><input type="hidden" name="section" value="v3"><input
+                                        type="hidden" name="report_id" value="<?=(int)$r['report_id']?>"><select
+                                        name="status">
+                                        <option value="verified" <?=$r['status']==='verified'?'selected':''?>>Verified
+                                        </option>
+                                        <option value="resolved" <?=$r['status']==='resolved'?'selected':''?>>Resolved
+                                        </option>
+                                        <option value="rejected" <?=$r['status']==='rejected'?'selected':''?>>Rejected
+                                        </option>
+                                    </select><input type="number" name="points" min="0" max="1000" value="0"
+                                        title="Award points"><button class="btn btn-primary btn-sm">Save</button></form>
+                            </li><?php endforeach;endif;?></ul>
+                    </article>
+                </section>
+                <section class="view" id="v4">
+                    <h1>Collection schedules</h1>
+                    <form class="card grid g3" action="dashboard-action.php" method="post">
+                        <?php dashboard_form_token();?><input type="hidden" name="action" value="create_schedule"><input
+                            type="hidden" name="section" value="v4"><label class="field"><span>Area / purok</span><input
+                                name="area_purok" required></label><label class="field"><span>Date</span><input
+                                type="date" name="schedule_date" min="<?=date('Y-m-d')?>" required></label><label
+                            class="field"><span>Waste type</span><input name="waste_type" required></label><label
+                            class="field"><span>Start time</span><input type="time" name="start_time"></label><label
+                            class="field"><span>End time</span><input type="time" name="end_time"></label><label
+                            class="field"><span>Collector</span><select name="collector_id">
+                                <option value="">Unassigned</option><?php foreach($collectors as $c):?><option
+                                    value="<?=(int)$c['ID']?>"><?=e($c['fname'].' '.$c['lname'])?></option>
+                                <?php endforeach;?>
+                            </select></label><button class="btn btn-primary">Create schedule</button></form>
+                    <article class="card" style="margin-top:var(--gap)">
+                        <ul class="rows"><?php if(!$schedules):?><li><span class="muted">No schedules posted.</span>
+                            </li><?php else:foreach($schedules as $s):?><li>
+                                <div><strong><?=e($s['area_purok'])?> ·
+                                        <?=e($s['waste_type'])?></strong><small><?=e(date('D, M j, Y',strtotime($s['schedule_date'])))?>
+                                        · <?=e($s['fname']?($s['fname'].' '.$s['lname']):'Unassigned')?></small></div>
+                                <span class="badge b-pending"><?=e(ucwords(str_replace('_',' ',$s['status'])))?></span>
+                            </li><?php endforeach;endif;?></ul>
+                    </article>
+                </section>
+                <section class="view" id="v5">
+                    <h1>Reward catalog</h1>
+                    <form class="card grid g4" action="dashboard-action.php" method="post">
+                        <?php dashboard_form_token();?><input type="hidden" name="action" value="create_reward"><input
+                            type="hidden" name="section" value="v5"><label class="field"><span>Reward name</span><input
+                                name="reward_name" required></label><label class="field"><span>Description</span><input
+                                name="description"></label><label class="field"><span>Points required</span><input
+                                type="number" name="points_required" min="1" required></label><label
+                            class="field"><span>Stock</span><input type="number" name="stock_qty" min="0" value="0"
+                                required></label><button class="btn btn-primary">Add reward</button></form>
+                    <article class="card" style="margin-top:var(--gap)">
+                        <ul class="rows"><?php if(!$rewards):?><li><span class="muted">No rewards in the catalog.</span>
+                            </li><?php else:foreach($rewards as $r):?><li>
+                                <div><strong><?=e($r['reward_name'])?></strong><small><?=number_format((int)$r['points_required'])?>
+                                        points · <?=number_format((int)$r['stock_qty'])?> in stock ·
+                                        <?=e($r['description'])?></small></div>
+                                <form action="dashboard-action.php" method="post"><?php dashboard_form_token();?><input
+                                        type="hidden" name="action" value="toggle_reward"><input type="hidden"
+                                        name="section" value="v5"><input type="hidden" name="reward_id"
+                                        value="<?=(int)$r['reward_id']?>"><button
+                                        class="btn btn-sm"><?=$r['is_active']?'Deactivate':'Activate'?></button></form>
+                            </li><?php endforeach;endif;?></ul>
+                    </article>
+                </section>
+                <section class="view" id="v6">
+                    <h1>Reward redemptions</h1>
+                    <article class="card">
+                        <ul class="rows"><?php if(!$claims):?><li><span class="muted">No claims.</span></li>
+                            <?php else:foreach($claims as $c):?><li>
+                                <div><strong><?=e($c['reward_name'])?> ·
+                                        <?=e($c['fname'].' '.$c['lname'])?></strong><small><?=number_format((int)$c['points_spent'])?>
+                                        points · <?=e(date('M j, Y',strtotime($c['claimed_at'])))?></small></div>
+                                <?php if($c['status']==='pending'):?><form action="dashboard-action.php" method="post"
+                                    class="acts"><?php dashboard_form_token();?><input type="hidden" name="action"
+                                        value="claim_status"><input type="hidden" name="section" value="v6"><input
+                                        type="hidden" name="claim_id" value="<?=(int)$c['claim_id']?>"><button
+                                        class="btn btn-primary btn-sm" name="status"
+                                        value="claimed">Approve</button><button class="btn btn-sm" name="status"
+                                        value="cancelled">Cancel and refund</button></form><?php else:?><span
+                                    class="badge b-pending"><?=e(ucfirst($c['status']))?></span><?php endif;?>
+                            </li><?php endforeach;endif;?></ul>
+                    </article>
+                </section>
+                <section class="view" id="v7">
                     <h1>My profile</h1>
-                    <p class="sub">Update your photo and the details shown on your account.</p>
-                    <div class="grid g2" style="align-items:start">
-                        <form class="card" action="#">
-                            <h2>Account details</h2>
-                            <div class="profile-head"><span class="avatar lg">A</span><button type="button"
-                                    class="btn btn-sm">Add/Change photo</button><button type="button"
-                                    class="btn btn-sm">Remove</button><small>JPG or PNG.</small></div>
-                            <label class="field"><span>First name</span><input value="Admin"></label>
-                            <label class="field"><span>Last name</span><input value="Cruz"></label>
-                            <label class="field"><span>Email</span><input type="email"
-                                    value="admin@barangay.gov.ph"></label>
-                            <button class="btn btn-primary" type="submit">Save changes</button> <button class="btn"
-                                type="reset">Undo changes</button>
-                        </form>
-                        <form class="card" action="#">
-                            <h2>Change password</h2>
-                            <label class="field"><span>New password</span><input type="password"
-                                    placeholder="At least 8 characters" minlength="8"></label>
-                            <label class="field"><span>Confirm new password</span><input type="password"
-                                    minlength="8"></label>
-                            <button class="btn btn-primary" type="submit">Update password</button>
-                        </form>
+                    <div class="grid g2">
+                        <form class="card" action="dashboard-action.php" method="post">
+                            <?php dashboard_form_token();?><input type="hidden" name="action"
+                                value="update_profile"><input type="hidden" name="section"
+                                value="v7"><?php foreach(['fname'=>'First name','lname'=>'Last name','email'=>'Email','phone'=>'Phone','address'=>'Address'] as $key=>$label):?><label
+                                class="field"><span><?=e($label)?></span><input name="<?=e($key)?>"
+                                    value="<?=e($user[$key]??'')?>" <?=$key==='email'?'type="email" required':''?>
+                                    <?=$key==='fname'||$key==='lname'?'required':''?>></label><?php endforeach;?><button
+                                class="btn btn-primary">Save profile</button></form>
+                        <form class="card" action="dashboard-action.php" method="post">
+                            <?php dashboard_form_token();?><input type="hidden" name="action"
+                                value="change_password"><input type="hidden" name="section" value="v7"><label
+                                class="field"><span>New password</span><input type="password" name="password"
+                                    minlength="8" required></label><label class="field"><span>Confirm
+                                    password</span><input type="password" name="confirm" minlength="8"
+                                    required></label><button class="btn btn-primary">Change password</button></form>
                     </div>
                 </section>
-
+                <section class="view" id="v8"><h1>Segregation observations</h1><p class="sub">Review collector evidence and award points to the resident.</p><article class="card"><ul class="rows"><?php if(!$observations):?><li><span class="muted">No observations submitted.</span></li><?php else:foreach($observations as $o):?><li><div><strong><?=e($o['area_purok'])?> · <?=e($o['location_details'])?></strong><small><?=e($o['proper_bins'])?> of <?=e($o['total_bins'])?> bins sorted · Resident <?=e($o['resident_fname'].' '.$o['resident_lname'])?> · Collector <?=e($o['collector_fname'].' '.$o['collector_lname'])?></small><small><?=nl2br(e($o['notes']))?></small><?php if($o['photo_path']):?><small><a href="../<?=e($o['photo_path'])?>" target="_blank" rel="noopener">View photo evidence</a></small><?php endif;?></div><?php if($o['status']==='pending'):?><form action="dashboard-action.php" method="post" class="acts"><?php dashboard_form_token();?><input type="hidden" name="action" value="observation_status"><input type="hidden" name="section" value="v8"><input type="hidden" name="observation_id" value="<?=(int)$o['observation_id']?>"><input type="number" name="points" min="0" max="1000" value="50" aria-label="Award points"><button class="btn btn-primary btn-sm" name="status" value="approved">Approve</button><button class="btn btn-sm" name="status" value="rejected">Reject</button></form><?php else:?><span class="badge b-pending"><?=e(ucfirst($o['status']))?></span><?php endif;?></li><?php endforeach;endif;?></ul></article></section>
             </div>
         </main>
     </div>
-
-    <!-- Approval dialog -->
-    <dialog id="appr-dialog" aria-labelledby="appr-title">
-        <form method="dialog" id="appr-form">
-            <h2 id="appr-title">Approve account</h2>
-            <p class="muted" id="appr-sub" style="margin-bottom:18px"></p>
-            <label class="field" id="appr-zone" hidden><span>Assigned zone (collector)</span>
-                <select>
-                    <option>Zone 1 · Purok 1 to 3</option>
-                    <option>Zone 2 · Purok 4 to 6</option>
-                    <option>Zone 3 · Purok 7 to 9</option>
-                </select></label>
-            <fieldset id="appr-perms" hidden
-                style="border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:0 0 16px">
-                <legend class="muted" style="padding:0 8px">Staff permissions</legend>
-                <div class="toolbar" style="margin:0"><label class="check"><input type="checkbox" checked> Waste
-                        reports</label><label class="check"><input type="checkbox" checked> Collection
-                        schedules</label><label class="check"><input type="checkbox" checked> Resident
-                        concerns</label><label class="check"><input type="checkbox"> Redemptions</label><label
-                        class="check"><input type="checkbox"> Community rewards (verify purok results)</label></div>
-            </fieldset>
-            <p class="notice" id="appr-note" style="margin-bottom:0"></p>
-            <div class="btns"><button type="button" class="btn" id="appr-cancel">Cancel</button><button type="button"
-                    class="btn btn-primary" id="appr-ok">Approve account</button></div>
-        </form>
-    </dialog>
-
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script src="../aos-init.js"></script>
 </body>
 
 </html>
